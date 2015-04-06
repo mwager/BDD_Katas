@@ -1,0 +1,42 @@
+{
+  "name": "kata-tictactoe",
+  "version": "0.1.0",
+  "description": "",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "node_modules/karma/bin/karma start karma.conf.coffee",
+    "start": "echo 'TODO'"
+  },
+  "author": "Michael Wager",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "canonical-path": "*",
+    "chai": "*",
+    "coffee-script": "*",
+    "gulp": "*",
+    "gulp-bump": "*",
+    "gulp-coffee": "latest",
+    "gulp-concat": "*",
+    "gulp-karma": "*",
+    "gulp-mocha": "*",
+    "gulp-newer": "*",
+    "gulp-plumber": "^0.6.6",
+    "gulp-uglify": "*",
+    "gulp-util": "^3.0.4",
+    "gulp-watch": "^4.1.1",
+    "gulp-wrap-commonjs": "*",
+    "karma": "^0.12.31",
+    "karma-chrome-launcher": "^0.1.7",
+    "karma-coffee-preprocessor": "*",
+    "karma-coverage": "^0.2.7",
+    "karma-mocha": "*",
+    "karma-mocha-reporter": "^1.0.0",
+    "karma-phantomjs-launcher": "*",
+    "karma-spec-reporter": "*",
+    "mocha": "*",
+    "mockery": "*",
+    "sinon": "1.12.0",
+    "sinon-chai": "*"
+  }
+}
