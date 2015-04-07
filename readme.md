@@ -1,6 +1,6 @@
-# Kata TicTacToe
+# BDD Katas
 
-I created this project to learn BDD by doing. The idea is based on the book [Behaviour Driven Development with JavaScript](http://developerpress.com/BehaviourDrivenDevelopmentwithJavaScript-175419) by Marco Emrich. I made this public because I think this should keep my motivivation and makes me focus more on quality.
+I created this project to learn BDD by doing. The idea is based on the book [Behaviour Driven Development with JavaScript](http://developerpress.com/BehaviourDrivenDevelopmentwithJavaScript-175419) by Marco Emrich. I made this public because I think this should keep my motivation high and makes me focus more on quality.
 
 The repo contains my implementation of the exercises from the book as well as an implementation of a TicTacToe game.
 
