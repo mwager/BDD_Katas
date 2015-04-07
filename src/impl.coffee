@@ -2,6 +2,12 @@
 * Implementation of the game. All classes in one file for now ;)
 ###
 
+__EMPTY = "-"
+
+# nodejs or browser?
+# thx http://stackoverflow.com/questions/4214731/coffeescript-global-variables
+root = global ? this
+
 
 ###
 * Class represents a mark on a board
@@ -9,7 +15,7 @@
 * It has a count value (1 or -1) for winner detection,
 * a player reference and knows its position (x,y)
 ###
-window.Mark = class
+root.Mark = class
   constructor: (count, player, position)->
     @count    = count
     @player   = player
@@ -19,12 +25,12 @@ window.Mark = class
 ###
 * Class implements a "board" of 3x3 fields
 ###
-window.Board = class
+root.Board = class
   constructor: (players) ->
     # fixed for now
     @rows       = 3
     @cols       = 3
-    @EMPTY      = "-"
+    @EMPTY      = __EMPTY
     @_winner    = null
     @_markCount = 0
 
@@ -47,7 +53,7 @@ window.Board = class
       throw new Error "X or y must be smaller than #{@rows}/#{@cols} but is: #{x}/#{y}"
 
     if(@_board[x][y] isnt @EMPTY)
-      throw new Error "board[x][y] is already occupied with the mark #{@_board[x][y]}"
+      throw new Error "board[x][y] is already occupied with the mark #{@_board[x][y].getPlayer().getMark()}"
 
     @_markCount++
 
@@ -129,11 +135,16 @@ window.Board = class
 ###
 * Class represents a "player"
 ###
-window.Player = class
-  constructor: (name, mark) ->
-    @_name   = name
-    @_points = 0
-    @_mark   = mark
+root.Player = class
+  constructor: (name, mark, isComputer) ->
+    @_name       = name
+    @_points     = 0
+    @_mark       = mark
+    @_isComputer = isComputer
+
+    # default name ;-)
+    if isComputer and !name
+      @_name = "Uncle Bob"
 
   getName: ->
     @_name
@@ -143,3 +154,36 @@ window.Player = class
 
   getMark: ->
     @_mark
+
+  # get the best position if we are a computer player
+  getPosition: (board) ->
+    position   = {}
+    boardArray = board.getBoard()
+
+    for x in [0...boardArray.length]
+      for y in [0...boardArray.length]
+        if boardArray[x][y] is __EMPTY
+          return {x: x, y: y}
+
+    # TODO
+    # # 1. horizontal win
+    # if boardArray[0][0] isnt __EMPTY
+    #   boardArray[0][0].player.getMark() is @_mark and
+    #   boardArray[0][1].player.getMark() is @_mark and
+    #   boardArray[0][2] is __EMPTY
+    #   position = {x: 0, y: 2}
+
+    return position
+
+
+###
+* Class represents a "game"
+* A game has players and "knows" the board
+###
+root.Game = class
+  initBoard: (players) ->
+    @_players = players
+    @_board   = new Board(players)
+
+  getPlayers: ->
+    return @_players

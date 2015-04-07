@@ -14,8 +14,8 @@
 * ------------------------- Factory-Helpers -------------------------
 ###
 window.PlayerFactory =
-  create: (name = "Michael", mark) ->
-    return new Player name, mark
+  create: (name, mark, isComputer = false) ->
+    return new Player name, mark, isComputer
 
 __players = [
   PlayerFactory.create("Michael", "X"),
@@ -183,7 +183,7 @@ describe "A Board", ->
 
 describe "A Player", ->
   beforeEach ->
-    @player = PlayerFactory.create()
+    @player = PlayerFactory.create("Michael", "X")
 
   it "should have a name", ->
     expect(@player.getName()).to.equal "Michael"
@@ -191,8 +191,31 @@ describe "A Player", ->
   it "should have no points at start", ->
     expect(@player.getPoints()).to.equal 0
 
+  xdescribe "can be a computer player", ->
+    beforeEach ->
+      @computerPlayer = PlayerFactory.create(null, "O", true)
 
+    it "should be a computer player", ->
+      expect(@computerPlayer._isComputer).to.equal true
+      expect(@computerPlayer._name).to.equal "Uncle Bob"
 
+    describe "and should make the best possible move", ->
+      beforeEach ->
+        @board = BoardFactory.create()
+
+      it "horizontal", ->
+        @board.putMark(0, 0, "X")
+        @board.putMark(0, 1, "X")
+        position = @computerPlayer.getPosition(@board)
+        expect(position.x).to.equal 0
+        expect(position.y).to.equal 2
+
+      it "vertical", ->
+        @board.putMark(0, 0, "X")
+        @board.putMark(1, 0, "X")
+        position = @computerPlayer.getPosition(@board)
+        expect(position.x).to.equal 2
+        expect(position.y).to.equal 0
 
 ###
 * ------------------------- HIGH LEVEL SPECS -------------------------

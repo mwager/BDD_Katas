@@ -5,11 +5,13 @@
   "main": "gulpfile.js",
   "scripts": {
     "test": "node_modules/karma/bin/karma start karma.conf.coffee",
-    "start": "echo 'TODO'"
+    "start": "coffee src/cli.coffee"
   },
   "author": "Michael Wager",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "colors": "^1.0.3"
+  },
   "devDependencies": {
     "canonical-path": "*",
     "chai": "*",

@@ -11,6 +11,7 @@ module.exports = (config) ->
     frameworks: ['mocha']
 
     client:
+      captureConsole: true
       mocha:
         reporter: 'html'
         ui: 'bdd'
@@ -20,9 +21,10 @@ module.exports = (config) ->
       'node_modules/chai/chai.js'
       'node_modules/sinon/pkg/sinon-1.12.0.js'
 
-      'src/**/*.coffee'           # src
-      'specs/setup.coffee'        # setup
-      'specs/*.spec.coffee'       # specs
+      #'src/**/*.coffee'           # src
+      'src/bdd-impl.coffee'        # src
+      'src/impl.coffee'            # src
+      'specs/*.coffee'             # setup and specs
     ]
 
     # list of files to exclude
@@ -36,7 +38,9 @@ module.exports = (config) ->
       # do not include tests or libraries
       # (these files will be instrumented by Istanbul via Ibrik unless
       # specified otherwise in coverageReporter.instrumenter)
-      'src/**/*.coffee': ['coverage'],
+      #'src/**/*.coffee': ['coverage'],
+      'src/impl.coffee': ['coverage'],
+      'src/bdd-impl.coffee': ['coverage'],
 
       # note: project files will already be converted to
       # JavaScript via coverage preprocessor.
