@@ -11,7 +11,9 @@ module.exports = (config) ->
     frameworks: ['mocha']
 
     client:
+      # should "console.log" calls displayed in the terminal too?
       captureConsole: true
+
       mocha:
         reporter: 'html'
         ui: 'bdd'

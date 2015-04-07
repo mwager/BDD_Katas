@@ -1,4 +1,4 @@
-# Spec examples from the book
+# Spec exercises from the book
 
 describe "BDD Katas", ->
 
