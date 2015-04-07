@@ -1,16 +1,37 @@
 ###
-* Class implements a "board" of X x X fields
+* Implementation of the game. All classes in one file for now ;)
+###
+
+
+###
+* Class represents a mark on a board
+*
+* It has a count value (1 or -1) for winner detection,
+* a player reference and knows its position (x,y)
+###
+window.Mark = class
+  constructor: (count, player, position)->
+    @count    = count
+    @player   = player
+    @position = position
+
+
+###
+* Class implements a "board" of 3x3 fields
 ###
 window.Board = class
-  constructor: () ->
+  constructor: (players) ->
     # fixed for now
-    @rows    = 3
-    @cols    = 3
-    @EMPTY   = "-"
-    @_winner = null
+    @rows       = 3
+    @cols       = 3
+    @EMPTY      = "-"
+    @_winner    = null
+    @_markCount = 0
 
-    # if(rows.length isnt cols.length)
-    #   throw new Error "Row count must match column count but is: rows = #{rows}, cols = #{cols}"
+    # hash map to get a player by mark
+    @_players = {}
+    @_players[players[0].getMark()] = players[0]
+    @_players[players[1].getMark()] = players[1]
 
     @_board = [
       [@EMPTY, @EMPTY, @EMPTY],
@@ -18,72 +39,77 @@ window.Board = class
       [@EMPTY, @EMPTY, @EMPTY]
     ]
 
-    # for i in [0...rows]
-    #   rowsArr = []
-    #
-    #   for j in [0...cols]
-    #     rowsArr.push(0)
-    #
-    #   @_board.push(rowsArr)
-
   getBoard: ->
     return @_board
 
-  putMark: (x, y, mark = "X") ->
+  putMark: (x, y, mark) ->
     if(x >= @rows or y >= @cols)
       throw new Error "X or y must be smaller than #{@rows}/#{@cols} but is: #{x}/#{y}"
 
     if(@_board[x][y] isnt @EMPTY)
       throw new Error "board[x][y] is already occupied with the mark #{@_board[x][y]}"
 
-    @_board[x][y] = mark
+    @_markCount++
+
+    countValue = if mark is "X" then 1 else -1
+
+    @_board[x][y] = new Mark(countValue, @_players[mark], [x, y])
 
   # A game is over when either there are 3 identical marks in a row or all fields are set
-  # TODO this could be done so much better ;)
   isOver: ->
-    # 1. horizontal
-    if(@_board[0][0] isnt @EMPTY and @_board[0][0] is @_board[0][1] and @_board[0][1] is @_board[0][2])
-      @_winner = @_board[0][0]
-      return true
-    if(@_board[1][0] isnt @EMPTY and @_board[1][0] is @_board[1][1] and @_board[1][1] is @_board[1][2])
-      @_winner = @_board[1][0]
-      return true
-    if(@_board[2][0] isnt @EMPTY and @_board[2][0] is @_board[2][1] and @_board[2][1] is @_board[2][2])
-      @_winner = @_board[2][0]
+    # log @toString()
+
+    # 1. rows
+    for i in [0...@rows]
+      total = 0
+      for j in [0...@cols]
+        total += @_board[i][j].count
+
+      if @_isOverBecausePlayerWon(total)
+        return true
+
+    # 2. cols
+    for i in [0...@rows]
+      total = 0
+      for j in [0...@cols]
+        total += @_board[j][i].count
+
+      if @_isOverBecausePlayerWon(total)
+        return true
+
+    # 3. diagonals
+    i     = 0
+    j     = 0
+    total = 0
+    while i < @rows
+      total += @_board[i++][j++].count
+
+    if @_isOverBecausePlayerWon(total)
       return true
 
-    # 2. vertical
-    if(@_board[0][0] isnt @EMPTY and @_board[0][0] is @_board[1][0] and @_board[1][0] is @_board[2][0])
-      @_winner = @_board[0][0]
-      return true
-    if(@_board[0][1] isnt @EMPTY and @_board[0][1] is @_board[1][1] and @_board[1][1] is @_board[2][1])
-      @_winner = @_board[0][1]
-      return true
-    if(@_board[0][2] isnt @EMPTY and @_board[0][2] is @_board[1][2] and @_board[1][2] is @_board[2][2])
-      @_winner = @_board[0][2]
-      return true
+    i     = 0
+    j     = @cols - 1
+    total = 0
+    while i < @rows
+      total += @_board[i++][j--].count
 
-    # 3. diagonal
-    if(@_board[0][0] isnt @EMPTY and @_board[0][0] is @_board[1][1] and @_board[1][1] is @_board[2][2])
-      @_winner = @_board[0][0]
-      return true
-    if(@_board[0][2] isnt @EMPTY and @_board[0][2] is @_board[1][1] and @_board[1][1] is @_board[2][0])
-      @_winner = @_board[0][2]
+    if @_isOverBecausePlayerWon(total)
       return true
 
     # 4. all fields are set but no player has won
-    if @_board[0][0] isnt @EMPTY and
-       @_board[0][1] isnt @EMPTY and
-       @_board[0][2] isnt @EMPTY and
-       @_board[1][0] isnt @EMPTY and
-       @_board[1][1] isnt @EMPTY and
-       @_board[1][2] isnt @EMPTY and
-       @_board[2][0] isnt @EMPTY and
-       @_board[2][1] isnt @EMPTY and
-       @_board[2][2] isnt @EMPTY
+    if (@_markCount is (@rows * @cols))
       return true
 
     return false
+
+  _isOverBecausePlayerWon: (total) ->
+    if(total is 3) #...X won on a row
+      @_winner = @_players["X"]
+      return true
+
+    if(total is -3) #... O won on a row
+      @_winner = @_players["O"]
+      return true
 
   getWinner: ->
     return @_winner
@@ -93,45 +119,27 @@ window.Board = class
     str = ""
     for row in @_board
       for mark in row
-        str += mark
+        str += if mark.player then mark.player.getMark() else @EMPTY
 
       str += "\n"
 
     return str
 
+
 ###
 * Class represents a "player"
 ###
 window.Player = class
-  constructor: (name) ->
+  constructor: (name, mark) ->
     @_name   = name
     @_points = 0
+    @_mark   = mark
 
   getName: ->
-    return @_name
+    @_name
 
   getPoints: ->
-    return @_points
+    @_points
 
-
-###
-* Class represents a "game"
-###
-window.Game = class
-  ###
-  * Game constructor
-  *
-  * Needs a config object like this:
-  *   config =
-  *     players: [playerInstanceX, playerInstanceO]
-  ###
-  constructor: (config) ->
-    @_config = config
-    @_board = {}
-
-  getPlayers: ->
-    return @_config.players
-
-  # sense!?
-  getBoard: ->
-    return @_board
+  getMark: ->
+    @_mark
