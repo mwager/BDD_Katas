@@ -4,51 +4,47 @@
 
 __EMPTY = "-"
 
-# nodejs or browser?
-# thx http://stackoverflow.com/questions/4214731/coffeescript-global-variables
-root = global ? this
-
-
 ###
 * Class represents a mark on a board
 *
 * It has a count value (1 or -1) for winner detection,
 * a player reference and knows its position (x,y)
 ###
-root.Mark = class
-  constructor: (count, player, position)->
-    @count    = count
-    @player   = player
+window.Mark = class
+  constructor: (position, player)->
     @position = position
+    @player   = player
+    @count    = player.getCount()
 
 
 ###
 * Class implements a "board" of 3x3 fields
 ###
-root.Board = class
-  constructor: (players) ->
-    # fixed for now
-    @rows       = 3
-    @cols       = 3
+window.Board = class
+  constructor: (rows, cols) ->
+    if rows isnt cols
+      throw new Error "Board Error: Rows !== cols: #{rows}/#{cols}"
+
+    if rows < cols or rows > cols
+      throw new Error "Board Error: Rows must equal cols: #{rows}/#{cols}"
+
+    @rows       = rows
+    @cols       = cols
     @EMPTY      = __EMPTY
     @_winner    = null
     @_markCount = 0
 
-    # hash map to get a player by mark
-    @_players = {}
-    @_players[players[0].getMark()] = players[0]
-    @_players[players[1].getMark()] = players[1]
+    @_board = []
 
-    @_board = [
-      [@EMPTY, @EMPTY, @EMPTY],
-      [@EMPTY, @EMPTY, @EMPTY],
-      [@EMPTY, @EMPTY, @EMPTY]
-    ]
+    for x in [0...@rows]
+      @_board.push []
+      for y in [0...@rows]
+        @_board[x].push @EMPTY
 
   getBoard: ->
     return @_board
 
-  putMark: (x, y, mark) ->
+  putMark: (x, y, player) ->
     if(x >= @rows or y >= @cols)
       throw new Error "X or y must be smaller than #{@rows}/#{@cols} but is: #{x}/#{y}"
 
@@ -57,9 +53,7 @@ root.Board = class
 
     @_markCount++
 
-    countValue = if mark is "X" then 1 else -1
-
-    @_board[x][y] = new Mark(countValue, @_players[mark], [x, y])
+    @_board[x][y] = new Mark([x, y], player)
 
   # A game is over when either there are 3 identical marks in a row or all fields are set
   isOver: ->
@@ -69,18 +63,20 @@ root.Board = class
     for i in [0...@rows]
       total = 0
       for j in [0...@cols]
+        mark  = @_board[i][j] # remember the field
         total += @_board[i][j].count
 
-      if @_isOverBecausePlayerWon(total)
+      if @_isOverBecausePlayerWon(total, mark)
         return true
 
     # 2. cols
     for i in [0...@rows]
       total = 0
       for j in [0...@cols]
+        mark  = @_board[j][i] # remember the field
         total += @_board[j][i].count
 
-      if @_isOverBecausePlayerWon(total)
+      if @_isOverBecausePlayerWon(total, mark)
         return true
 
     # 3. diagonals
@@ -88,18 +84,20 @@ root.Board = class
     j     = 0
     total = 0
     while i < @rows
+      mark  = @_board[i][j] # remember the field
       total += @_board[i++][j++].count
 
-    if @_isOverBecausePlayerWon(total)
+    if @_isOverBecausePlayerWon(total, mark)
       return true
 
     i     = 0
     j     = @cols - 1
     total = 0
     while i < @rows
+      mark  = @_board[i][j] # remember the field
       total += @_board[i++][j--].count
 
-    if @_isOverBecausePlayerWon(total)
+    if @_isOverBecausePlayerWon(total, mark)
       return true
 
     # 4. all fields are set but no player has won
@@ -108,13 +106,15 @@ root.Board = class
 
     return false
 
-  _isOverBecausePlayerWon: (total) ->
+  _isOverBecausePlayerWon: (total, mark) ->
     if(total is 3) #...X won on a row
-      @_winner = @_players["X"]
+      @_winner = mark.player
+      @_winner.addPoints 1
       return true
 
     if(total is -3) #... O won on a row
-      @_winner = @_players["O"]
+      @_winner = mark.player
+      @_winner.addPoints 1
       return true
 
   getWinner: ->
@@ -135,11 +135,12 @@ root.Board = class
 ###
 * Class represents a "player"
 ###
-root.Player = class
-  constructor: (name, mark, isComputer) ->
+window.Player = class
+  constructor: (name, countValue, isComputer) ->
     @_name       = name
     @_points     = 0
-    @_mark       = mark
+    @_countValue = countValue
+    @_mark       = if countValue is 1 then "X" else "O"
     @_isComputer = isComputer
 
     # default name ;-)
@@ -149,11 +150,17 @@ root.Player = class
   getName: ->
     @_name
 
+  addPoints: (points) ->
+    @_points += points
+
   getPoints: ->
     @_points
 
   getMark: ->
     @_mark
+
+  getCount: ->
+    return @_countValue
 
   # get the best position if we are a computer player
   getPosition: (board) ->
@@ -180,7 +187,7 @@ root.Player = class
 * Class represents a "game"
 * A game has players and "knows" the board
 ###
-root.Game = class
+window.Game = class
   initBoard: (players) ->
     @_players = players
     @_board   = new Board(players)

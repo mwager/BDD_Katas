@@ -14,13 +14,18 @@
 * ------------------------- Factory-Helpers -------------------------
 ###
 window.PlayerFactory =
-  create: (name, mark, isComputer = false) ->
-    return new Player name, mark, isComputer
+  create: (name = "Michael", countValue = 1, isComputer = false) ->
+    return new Player name, countValue, isComputer
 
-__players = [
-  PlayerFactory.create("Michael", "X"),
-  PlayerFactory.create("Uncle Bob", "O")
-]
+__players = []
+
+initPlayers = ->
+  __players = [
+    PlayerFactory.create("Michael", 1), # first player has 1 and the second has -1 => "by convention" ;)
+    PlayerFactory.create("Uncle Bob", -1) # -> this is used to detect the winner, see board.isOver()
+  ]
+
+initPlayers()
 
 # TODO!?
 window.GameFactory =
@@ -31,23 +36,20 @@ window.GameFactory =
 
 window.BoardFactory  =
   create: () ->
-    return new Board __players
+    return new Board 3, 3
 
 
 describe "TicTacToe Specs", ->
   describe "A Mark", ->
     beforeEach ->
-      @mark = new Mark(-1, __players[0], [0, 0])
-
-    it "should have a count value", ->
-      expect(@mark.count).to.equal -1
-
-    it "should have a player ref", ->
-      expect(@mark.player.getName()).to.equal "Michael"
+      @mark = new Mark([0, 0], __players[0])
 
     it "should know its position on the board", ->
       expect(@mark.position[0]).to.equal 0
       expect(@mark.position[1]).to.equal 0
+
+    it "should have a player ref", ->
+      expect(@mark.player.getName()).to.equal "Michael"
 
   ###
   * -------------------- LOW LEVEL SPECS -------------------------
@@ -72,26 +74,25 @@ describe "TicTacToe Specs", ->
         @board = BoardFactory.create()
 
       it "should provide a method to put a mark on it", ->
-        @board.putMark(0, 0, "X")
+        @board.putMark(0, 0, __players[0])
         boardArr = @board.getBoard()
         expect(boardArr[0][0].player.getMark()).to.equal "X"
 
       it "should not allow to put the same mark again", ->
         # NOTE: we must pass a fn here which mocha itself may call
-        # expect(@board.putMark.bind(0, 0, "X")).to.throw(Error);
+        # expect(@board.putMark.bind(0, 0, __players[0])).to.throw(Error);
         # WTF!?!?!?
-        # TypeError: 'undefined' is not a function (evaluating 'this.board.putMark.bind(0, 0, "X")')
+        # TypeError: 'undefined' is not a function (evaluating 'this.board.putMark.bind(0, 0, __players[0])')
         # so:
         try
-          @board.putMark(0, 0, "X")
+          @board.putMark(0, 0, __players[0])
           expect("Error thrown").to.equal "false"
         catch err
           expect(true).to.equal true
 
       it "should throw an error if the boundaries are exceeded", ->
-        #   expect(@board.putMark.bind(3, 0, "X")).to.throw(Error);
         try
-          @board.putMark(3, 0, "X")
+          @board.putMark(3, 0, __players[0])
           expect("Error thrown").to.equal "false"
         catch err
           expect(true).to.equal true
@@ -99,92 +100,94 @@ describe "TicTacToe Specs", ->
 
     describe "Is over when", ->
       beforeEach ->
+        initPlayers()
         @board = BoardFactory.create()
 
       describe "three respective marks in a horizontal row are set", ->
-        it "first row - and should know the winner", ->
-          @board.putMark(0, 0, "X")
-          @board.putMark(0, 1, "X")
-          @board.putMark(0, 2, "X")
+        it "first row - and should know the winner - and the player should get one point if he wins", ->
+          @board.putMark(0, 0, __players[0])
+          @board.putMark(0, 1, __players[0])
+          @board.putMark(0, 2, __players[0])
           expect(@board.isOver()).to.equal true
           expect(@board.getWinner().getName()).to.equal "Michael"
+          expect(@board.getWinner().getPoints()).to.equal 1
 
         it "second row - and should know the winner", ->
-          @board.putMark(1, 0, "X")
-          @board.putMark(1, 1, "X")
-          @board.putMark(1, 2, "X")
+          @board.putMark(1, 0, __players[0])
+          @board.putMark(1, 1, __players[0])
+          @board.putMark(1, 2, __players[0])
           expect(@board.isOver()).to.equal true
           expect(@board.getWinner().getName()).to.equal "Michael"
 
         it "third row - and should know the winner", ->
-          @board.putMark(2, 0, "O")
-          @board.putMark(2, 1, "O")
-          @board.putMark(2, 2, "O")
+          @board.putMark(2, 0, __players[1])
+          @board.putMark(2, 1, __players[1])
+          @board.putMark(2, 2, __players[1])
           expect(@board.isOver()).to.equal true
           expect(@board.getWinner().getName()).to.equal "Uncle Bob"
 
       describe "three respective marks in a vertical row are set", ->
         it "first col - and should know the winner", ->
-          @board.putMark(0, 0, "X")
-          @board.putMark(1, 0, "X")
-          @board.putMark(2, 0, "X")
+          @board.putMark(0, 0, __players[0])
+          @board.putMark(1, 0, __players[0])
+          @board.putMark(2, 0, __players[0])
           expect(@board.isOver()).to.equal true
           expect(@board.getWinner().getName()).to.equal "Michael"
 
         it "second col - and should know the winner", ->
-          @board.putMark(0, 1, "X")
-          @board.putMark(1, 1, "X")
-          @board.putMark(2, 1, "X")
+          @board.putMark(0, 1, __players[0])
+          @board.putMark(1, 1, __players[0])
+          @board.putMark(2, 1, __players[0])
           expect(@board.isOver()).to.equal true
           expect(@board.getWinner().getName()).to.equal "Michael"
 
         it "third col - and should know the winner", ->
-          @board.putMark(0, 2, "X")
-          @board.putMark(1, 2, "X")
-          @board.putMark(2, 2, "X")
+          @board.putMark(0, 2, __players[0])
+          @board.putMark(1, 2, __players[0])
+          @board.putMark(2, 2, __players[0])
           expect(@board.isOver()).to.equal true
           expect(@board.getWinner().getName()).to.equal "Michael"
 
       describe "three respective marks in a diagonal row are set", ->
         it "left to right - and should know the winner", ->
-          @board.putMark(0, 0, "X")
-          @board.putMark(1, 1, "X")
-          @board.putMark(2, 2, "X")
+          @board.putMark(0, 0, __players[0])
+          @board.putMark(1, 1, __players[0])
+          @board.putMark(2, 2, __players[0])
           expect(@board.isOver()).to.equal true
           expect(@board.getWinner().getName()).to.equal "Michael"
 
         it "right to left - and should know the winner", ->
-          @board.putMark(0, 2, "X")
-          @board.putMark(1, 1, "X")
-          @board.putMark(2, 0, "X")
+          @board.putMark(0, 2, __players[0])
+          @board.putMark(1, 1, __players[0])
+          @board.putMark(2, 0, __players[0])
           expect(@board.isOver()).to.equal true
           expect(@board.getWinner().getName()).to.equal "Michael"
 
       describe "all fields are just set", ->
         it "but no one wins", ->
-          @board.putMark(0, 0, "X")
-          @board.putMark(0, 1, "O")
-          @board.putMark(0, 2, "X")
-          @board.putMark(1, 0, "O")
-          @board.putMark(1, 1, "X")
-          @board.putMark(1, 2, "X")
-          @board.putMark(2, 0, "O")
-          @board.putMark(2, 1, "X")
-          @board.putMark(2, 2, "O")
+          @board.putMark(0, 0, __players[0])
+          @board.putMark(0, 1, __players[1])
+          @board.putMark(0, 2, __players[0])
+          @board.putMark(1, 0, __players[1])
+          @board.putMark(1, 1, __players[0])
+          @board.putMark(1, 2, __players[0])
+          @board.putMark(2, 0, __players[1])
+          @board.putMark(2, 1, __players[0])
+          @board.putMark(2, 2, __players[1])
           # @board._board = [
           #   ["X", "O", "X"],
           #   ["O", "X", "X"],
           #   ["O", "X", "O"]
           # ]
 
-          log @board.toString()
+          # log @board.toString()
           expect(@board.isOver()).to.equal true
           expect(@board.getWinner()).to.equal null
 
 
   describe "A Player", ->
     beforeEach ->
-      @player = PlayerFactory.create("Michael", "X")
+      @player = PlayerFactory.create()
 
     it "should have a name", ->
       expect(@player.getName()).to.equal "Michael"
@@ -194,7 +197,7 @@ describe "TicTacToe Specs", ->
 
     xdescribe "can be a computer player", ->
       beforeEach ->
-        @computerPlayer = PlayerFactory.create(null, "O", true)
+        @computerPlayer = PlayerFactory.create(null, -1, true)
 
       it "should be a computer player", ->
         expect(@computerPlayer._isComputer).to.equal true
@@ -205,15 +208,15 @@ describe "TicTacToe Specs", ->
           @board = BoardFactory.create()
 
         it "horizontal", ->
-          @board.putMark(0, 0, "X")
-          @board.putMark(0, 1, "X")
+          @board.putMark(0, 0, __players[0])
+          @board.putMark(0, 1, __players[0])
           position = @computerPlayer.getPosition(@board)
           expect(position.x).to.equal 0
           expect(position.y).to.equal 2
 
         it "vertical", ->
-          @board.putMark(0, 0, "X")
-          @board.putMark(1, 0, "X")
+          @board.putMark(0, 0, __players[0])
+          @board.putMark(1, 0, __players[0])
           position = @computerPlayer.getPosition(@board)
           expect(position.x).to.equal 2
           expect(position.y).to.equal 0
@@ -225,11 +228,11 @@ describe "TicTacToe Specs", ->
     describe "Concrete scenario", ->
       it "Player X wins after 3 draws", ->
         board = BoardFactory.create()
-        board.putMark(0, 0, "X")
-        board.putMark(1, 0, "O")
-        board.putMark(0, 1, "X")
-        board.putMark(1, 1, "O")
-        board.putMark(0, 2, "X")
+        board.putMark(0, 0, __players[0])
+        board.putMark(1, 0, __players[1])
+        board.putMark(0, 1, __players[0])
+        board.putMark(1, 1, __players[1])
+        board.putMark(0, 2, __players[0])
 
         expect(board.isOver()).to.equal true
         expect(board.getWinner().getName()).to.equal "Michael"

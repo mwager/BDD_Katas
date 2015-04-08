@@ -6,8 +6,6 @@ The repo contains my implementation of the exercises from the book as well as an
 
 The code is written in CoffeeScript, for the specs I use mocha, chai and sinon. Code coverage via karma-coverage - look in the folder `/coverage` after running the tests.
 
-The specs and an HTML game can be viewed [here](TODO gh-pages).
-
 
 ## Install
 
@@ -19,18 +17,12 @@ The specs and an HTML game can be viewed [here](TODO gh-pages).
 
 `$ npm test`
 
-open the browser at http://localhost:9876/debug.html
+Then open a browser at http://localhost:9876/debug.html
 
 
 ## Playing the game
 
-The game may be played via the command line or in a web browser.
-
-Command line:
-
-    $ npm start
-
-Browser: TODO
+The game may be played [here](https://mwager.github.io/BDD_Katas/). See `index.html`.
 
 
 ## Specification
