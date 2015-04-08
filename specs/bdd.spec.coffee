@@ -17,8 +17,8 @@ describe "BDD Katas", ->
       return new StudyBook(name, price)
 
   window.CartFactory =
-    create: () ->
-      return new Cart()
+    create: (itemCollection) ->
+      return new Cart(itemCollection)
 
   ###
   * First part of the book: Seminar specs
@@ -109,33 +109,96 @@ describe "BDD Katas", ->
       it "should calculate its #grossPrice by adding a VAT of 7%", ->
         expect(@studyBook.grossPrice()).to.equal 107
 
+    describe "ItemCollection", ->
+      beforeEach ->
+        @collection = new ItemCollection()
+
+      it "addItem()", ->
+        @collection.addItem "foo"
+        @collection.addItem "bar"
+
+        expect(@collection._items.length).to.equal 2
+
+      it "each()", ->
+        @collection.addItem "foo"
+
+        count = 0
+        @collection.each (item) ->
+          count++
+
+        expect(count).to.equal 1
+
     describe "Cart", ->
       beforeEach ->
-        @cart = CartFactory.create()
+        # DI needed here to make it testable:
+        # inject an instance of ItemCollection, so we can use a mock of it here
+        itemCollection      = new ItemCollection()
+        @cart               = CartFactory.create(itemCollection)
+
+        # now create a mock of the injected ItemCollection
+        # used to verify correct dealing of cart with the itemCollection
+        # instance (behavior!)
+        @itemCollectionMock = sinon.mock(itemCollection)
 
       describe "A new cart", ->
         it "should contain no products", ->
-          expect(@cart.numProducts()).to.equal 0
+          # state verification:
+          # expect(@cart.numProducts()).to.equal 0
+          # how to do this via behavior verification here? I dont know.
+          # this seems not to be the best way:
+          @itemCollectionMock.expects("addItem").never()
+
+          itemCollection     = new ItemCollection()
+          cart               = CartFactory.create(itemCollection)
+
+          @itemCollectionMock.verify()
 
       describe "#add", ->
         it "should add a product to the cart", ->
           product = {}
+
+          # setup phase
+          # add the expectation of the correct behavior of cart.add() before
+          # the exercise phase!
+          @itemCollectionMock.expects("addItem").once().withArgs(product)
+
           @cart.add(product)
-          expect(@cart.doesContain(product)).to.equal true
-          expect(@cart.numProducts()).to.equal 1
+
+          # to prevent state verification here I need some kind of
+          # product collection which I can mock to verify the correct behavior
+          # of cart.add() - see setup phase above
+          # expect(@cart.doesContain(product)).to.equal true
+          # expect(@cart.numProducts()).to.equal 1
+
+          # ...and verify correct behavior
+          @itemCollectionMock.verify()
+
 
         it "should deduct the product from stock (MOCKING!)", ->
-          spy     = sinon.spy(Stock, "removeProduct")
+          # method 1 - spy
+          # spy     = sinon.spy(Stock, "removeProduct")
+          # product = ProductFactory.create("TheProduct", 100)
+          # @cart.add(product)
+          # expect(spy.withArgs(product.name).calledOnce).to.equal true
+
+          # method 2 - mock
+          # setup phase: data and expectations
           product = ProductFactory.create("TheProduct", 100)
 
+          mock = sinon.mock(Stock)
+          mock.expects("removeProduct").once().withArgs(product.name)
+
+          # exercise phase
           @cart.add(product)
 
-          expect(spy.withArgs(product.name).calledOnce).to.equal true
+          # verify phase: behavior verification
+          mock.verify()
 
-      describe "#doesContain", ->
-        it "should return false for a product that is not contained", ->
-          anotherProduct = {}
-          expect(@cart.doesContain(anotherProduct)).to.equal false
+      # method `doesContain` is not needed using mocks!
+      # describe "#doesContain", ->
+      #   it "should return false for a product that is not contained", ->
+      #     anotherProduct = {}
+      #     expect(@cart.doesContain(anotherProduct)).to.equal false
 
       describe "#grossPriceSum", ->
         it "should be 0 for an empty cart", ->
@@ -173,7 +236,8 @@ describe "BDD Katas", ->
     describe "--- HIGH LEVEL SPECS ---", ->
       describe "A cart with several different products", ->
         beforeEach ->
-          @cart = CartFactory.create()
+          @itemCollection = new ItemCollection()
+          @cart           = CartFactory.create(@itemCollection)
 
         it 'should have a #grossPriceSum of the contained products', ->
           licence   = ProductFactory.create "UltraIDE Licence", 100

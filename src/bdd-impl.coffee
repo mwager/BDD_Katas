@@ -63,20 +63,34 @@ window.Stock = {
   removeProduct: ->
 }
 
-window.Cart = class
+
+window.ItemCollection = class
   constructor: ->
-    @_products = []
+    @_items = []
+  addItem: (item) ->
+    @_items.push item
+  each: (callback) ->
+    @_items.forEach (item) ->
+      callback item
 
-  numProducts: ->
-    return @_products.length
 
-  doesContain: (product) ->
-    # return @_products.indexOf(product) >= 0
-    return product in @_products
+window.Cart = class
+  constructor: (itemCollection) ->
+    # @_products = []
+    @_itemCollection = itemCollection
+
+  # NOTE: this helper methods are only needed to do state verification in the specs
+  # numProducts: ->
+  #   return @_products.length
+  #
+  # doesContain: (product) ->
+  #   # return @_products.indexOf(product) >= 0
+  #   return product in @_products
 
   add: (product) ->
+    # @_products.push(product)
+    @_itemCollection.addItem product
     Stock.removeProduct(product.name)
-    @_products.push(product)
 
   grossPriceSum: ->
     # IMPL #1 - using map and reduce with coffeescript [:-(]
@@ -93,13 +107,18 @@ window.Cart = class
     #   sum += p.grossPrice()
     # return sum
 
-    # IMPL #2 - foreach
+    # IMPL #3 - foreach
+    # sum = 0
+    # @_products.forEach (p) ->
+    #   sum += p.grossPrice()
+    # return sum
+
+    # IMPL #4 - item collection
     sum = 0
-    @_products.forEach (p) ->
+    @_itemCollection.each (p) ->
       sum += p.grossPrice()
+
     return sum
-
-
 
 
 # kata try #2 - map, reduce, filter
