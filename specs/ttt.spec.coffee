@@ -35,8 +35,8 @@ window.GameFactory =
     return new Game config
 
 window.BoardFactory  =
-  create: () ->
-    return new Board 3, 3
+  create: (N = 3) ->
+    return new Board N
 
 
 describe "TicTacToe Specs", ->

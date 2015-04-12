@@ -7,8 +7,7 @@ __EMPTY = "-"
 ###
 * Class represents a mark on a board
 *
-* It has a count value (1 or -1) for winner detection,
-* a player reference and knows its position (x,y)
+* It has a position array [x, y] and a ref to a player which did the move
 ###
 window.Mark = class
   constructor: (position, player)->
@@ -18,27 +17,21 @@ window.Mark = class
 
 
 ###
-* Class implements a "board" of 3x3 fields
+* Class implements a "board" of N x N fields
 ###
 window.Board = class
-  constructor: (rows, cols) ->
-    if rows isnt cols
-      throw new Error "Board Error: Rows !== cols: #{rows}/#{cols}"
-
-    if rows < cols or rows > cols
-      throw new Error "Board Error: Rows must equal cols: #{rows}/#{cols}"
-
-    @rows       = rows
-    @cols       = cols
+  constructor: (N) ->
+    @rows       = N
+    @cols       = N
     @EMPTY      = __EMPTY
     @_winner    = null
     @_markCount = 0
 
     @_board = []
 
-    for x in [0...@rows]
+    for x in [0...N]
       @_board.push []
-      for y in [0...@rows]
+      for y in [0...N]
         @_board[x].push @EMPTY
 
   getBoard: ->
