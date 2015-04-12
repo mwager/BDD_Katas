@@ -23,10 +23,7 @@ module.exports = (config) ->
       'node_modules/chai/chai.js'
       'node_modules/sinon/pkg/sinon-1.12.0.js'
 
-      #'src/**/*.coffee'           # src
-      'src/bdd-impl.coffee'        # src
-      'src/impl.coffee'            # src
-      'specs/*.coffee'             # setup and specs
+      'src/*.coffee' # spec setup, src and specs
     ]
 
     # list of files to exclude
@@ -41,14 +38,15 @@ module.exports = (config) ->
       # (these files will be instrumented by Istanbul via Ibrik unless
       # specified otherwise in coverageReporter.instrumenter)
       #'src/**/*.coffee': ['coverage'],
-      'src/impl.coffee': ['coverage'],
-      'src/bdd-impl.coffee': ['coverage'],
+      'src/tictactoe.coffee': ['coverage'],
+      'src/exercises.coffee': ['coverage'],
 
       # note: project files will already be converted to
       # JavaScript via coverage preprocessor.
       # Thus, you'll have to limit the CoffeeScript preprocessor
       # to uncovered files.
-      'specs/*.coffee': ['coffee'],
+      'src/spec-setup.coffee' : ['coffee'],
+      'src/*.spec.coffee'     : ['coffee']
     }
 
     # optionally, configure the reporter

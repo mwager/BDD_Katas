@@ -29,6 +29,9 @@ window.Board = class
 
     @_board = []
 
+    @_initBoard N
+
+  _initBoard: (N) ->
     for x in [0...N]
       @_board.push []
       for y in [0...N]
@@ -159,14 +162,19 @@ window.Player = class
   getPosition: (board) ->
     position   = {}
     boardArray = board.getBoard()
+    N          = boardArray.length
 
     for x in [0...boardArray.length]
       for y in [0...boardArray.length]
         if boardArray[x][y] is __EMPTY
           return {x: x, y: y}
 
-    # TODO
     # # 1. horizontal win
+    # Win: If the player has two in a row, they can place a
+    # third to get three in a row.
+    # for x in [0...N]
+    #   for y in [0...N]
+
     # if boardArray[0][0] isnt __EMPTY
     #   boardArray[0][0].player.getMark() is @_mark and
     #   boardArray[0][1].player.getMark() is @_mark and

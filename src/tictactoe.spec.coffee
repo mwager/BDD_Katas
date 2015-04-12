@@ -201,18 +201,23 @@ describe "TicTacToe Specs", ->
 
       it "should be a computer player", ->
         expect(@computerPlayer._isComputer).to.equal true
-        expect(@computerPlayer._name).to.equal "Uncle Bob"
 
       describe "and should make the best possible move", ->
         beforeEach ->
           @board = BoardFactory.create()
 
-        it "horizontal", ->
+        it "horizontal win/block", ->
           @board.putMark(0, 0, __players[0])
           @board.putMark(0, 1, __players[0])
           position = @computerPlayer.getPosition(@board)
           expect(position.x).to.equal 0
           expect(position.y).to.equal 2
+
+          @board.putMark(0, 1, __players[0])
+          @board.putMark(0, 2, __players[0])
+          position = @computerPlayer.getPosition(@board)
+          expect(position.x).to.equal 0
+          expect(position.y).to.equal 0
 
         it "vertical", ->
           @board.putMark(0, 0, __players[0])
